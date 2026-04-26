@@ -43,63 +43,101 @@ function Cart() {
   const shipping = parseInt(100);
 
   const grandTotal = shipping + totalAmout;
-  //
-
-  /**========================================================================
-   *!                           Payment Intigration
-   *========================================================================**/
-
+  
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [pincode, setPincode] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const addOrder = useMutation(api.orders.createOrder);
-  const buyNow = async () => {
-    if (name === "" || address == "" || pincode == "" || phoneNumber == "") {
-      return toast.error("All fields are required", {
-        position: "top-center",
-        autoClose: 1000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
+  // ✅ Accept paymentId from Razorpay instead of hardcoding it
+const buyNow = async (paymentId) => {
+    if (name === "" || address === "" || pincode === "" || phoneNumber === "") {
+        return toast.error("All fields are required", {
+            position: "top-center",
+            autoClose: 1000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+        });
     }
-    let orderInfo;
-    const paymentId = "PAYMENTID_123456";
 
     cartItems.map((item, index, cartItem) => {
-      orderInfo = {
-        productId: cartItem[index]._id,
-        name: name,
-        address: address,
-        pincode: pincode,
-        phoneNumber: phoneNumber,
-        date: new Date().toLocaleString("en-US", {
-          month: "short",
-          day: "2-digit",
-          year: "numeric",
-        }),
-        title: cartItem[index].title,
-        price: cartItem[index].price,
-        imageUrl: cartItem[index].imageUrl,
-        category: cartItem[index].category,
-        description: cartItem[index].description,
-        email: JSON.parse(localStorage.getItem("user")).primaryEmailAddress
-          .emailAddress,
-        userId: JSON.parse(localStorage.getItem("user")).id,
-        paymentId: paymentId,
-      };
-      addOrder(orderInfo);
+        const orderInfo = {
+            productId: cartItem[index]._id,
+            name: name,
+            address: address,
+            pincode: pincode,
+            phoneNumber: phoneNumber,
+            date: new Date().toLocaleString("en-US", {
+                month: "short",
+                day: "2-digit",
+                year: "numeric",
+            }),
+            title: cartItem[index].title,
+            price: cartItem[index].price,
+            imageUrl: cartItem[index].imageUrl,
+            category: cartItem[index].category,
+            description: cartItem[index].description,
+            email: JSON.parse(localStorage.getItem("user")).primaryEmailAddress.emailAddress,
+            userId: JSON.parse(localStorage.getItem("user")).id,
+            paymentId: paymentId, // ✅ real Razorpay payment ID
+        };
+        addOrder(orderInfo);
     });
 
-    toast.success("Succesfully placed the order");
-
+    toast.success("Successfully placed the order");
     deleteCartAfterOrder(cartItems);
     navigate("/");
-  };
+};
+  // const buyNow = async () => {
+  //   if (name === "" || address == "" || pincode == "" || phoneNumber == "") {
+  //     return toast.error("All fields are required", {
+  //       position: "top-center",
+  //       autoClose: 1000,
+  //       hideProgressBar: false,
+  //       closeOnClick: true,
+  //       pauseOnHover: true,
+  //       draggable: true,
+  //       progress: undefined,
+  //       theme: "colored",
+  //     });
+  //   }
+  //   let orderInfo;
+  //   const paymentId = "PAYMENTID_123456";
+
+  //   cartItems.map((item, index, cartItem) => {
+  //     orderInfo = {
+  //       productId: cartItem[index]._id,
+  //       name: name,
+  //       address: address,
+  //       pincode: pincode,
+  //       phoneNumber: phoneNumber,
+  //       date: new Date().toLocaleString("en-US", {
+  //         month: "short",
+  //         day: "2-digit",
+  //         year: "numeric",
+  //       }),
+  //       title: cartItem[index].title,
+  //       price: cartItem[index].price,
+  //       imageUrl: cartItem[index].imageUrl,
+  //       category: cartItem[index].category,
+  //       description: cartItem[index].description,
+  //       email: JSON.parse(localStorage.getItem("user")).primaryEmailAddress
+  //         .emailAddress,
+  //       userId: JSON.parse(localStorage.getItem("user")).id,
+  //       paymentId: paymentId,
+  //     };
+  //     addOrder(orderInfo);
+  //   });
+
+  //   toast.success("Succesfully placed the order");
+
+  //   deleteCartAfterOrder(cartItems);
+  //   navigate("/");
+  // };
   return (
     <Layout>
       <div
@@ -227,16 +265,29 @@ function Cart() {
             </div>
             {/* <Modal  /> */}
             {totalAmout ? (
+              // <Modal
+              //   name={name}
+              //   address={address}
+              //   pincode={pincode}
+              //   phoneNumber={phoneNumber}
+              //   setName={setName}
+              //   setAddress={setAddress}
+              //   setPincode={setPincode}
+              //   setPhoneNumber={setPhoneNumber}
+              //   buyNow={buyNow}
+              // />
+              // Pass grandTotal so Razorpay knows the amount to charge
               <Modal
-                name={name}
-                address={address}
-                pincode={pincode}
-                phoneNumber={phoneNumber}
-                setName={setName}
-                setAddress={setAddress}
-                setPincode={setPincode}
-                setPhoneNumber={setPhoneNumber}
-                buyNow={buyNow}
+                  name={name}
+                  address={address}
+                  pincode={pincode}
+                  phoneNumber={phoneNumber}
+                  setName={setName}
+                  setAddress={setAddress}
+                  setPincode={setPincode}
+                  setPhoneNumber={setPhoneNumber}
+                  buyNow={buyNow}
+                  grandTotal={grandTotal}   // ✅ add this
               />
             ) : (
               <div className="  text-center rounded-lg text-white font-bold">
